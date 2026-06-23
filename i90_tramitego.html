@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renovación de Residencia I-90 | Trámite GO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --green: #16a34a; --green-light: #22c55e; --green-bg: #f0fdf4;
+    --green-border: #bbf7d0; --navy: #0f172a; --navy-mid: #1e3a5f;
+    --gray: #64748b; --gray-light: #f8fafc; --gray-border: #e2e8f0;
+    --white: #ffffff; --red: #ef4444; --amber: #f59e0b;
+    --amber-bg: #fffbeb; --amber-border: #fde68a;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08); --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--green-bg); color: var(--navy); min-height: 100vh; padding: 0 0 60px; }
+
+  .header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%); padding: 24px 20px; text-align: center; position: relative; overflow: hidden; }
+  .header::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:var(--green); opacity:.12; border-radius:50%; }
+  .header::after { content:''; position:absolute; bottom:-50px; left:-30px; width:140px; height:140px; background:var(--green-light); opacity:.08; border-radius:50%; }
+  .logo-wrap { display:inline-flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .logo-icon { width:48px; height:48px; background:var(--green); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:white; }
+  .logo-text .brand { font-size:22px; font-weight:800; color:white; line-height:1; }
+  .logo-text .brand span { color:var(--green-light); }
+  .logo-text .tagline { font-size:11px; color:rgba(255,255,255,.6); margin-top:2px; }
+  .header-title { font-size:18px; font-weight:700; color:white; }
+  .header-sub { font-size:13px; color:rgba(255,255,255,.65); margin-top:4px; }
+  .badge { display:inline-flex; align-items:center; gap:5px; background:rgba(22,163,74,.2); border:1px solid rgba(34,197,94,.3); color:#86efac; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; margin-top:10px; }
+
+  .progress-wrap { background:white; border-bottom:1px solid var(--gray-border); padding:16px 20px; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .progress-bar-bg { background:var(--gray-border); border-radius:100px; height:6px; margin-bottom:8px; }
+  .progress-bar-fill { background:linear-gradient(90deg,var(--green),var(--green-light)); height:100%; border-radius:100px; transition:width .4s ease; }
+  .progress-info { display:flex; justify-content:space-between; align-items:center; }
+  .progress-label { font-size:12px; color:var(--gray); font-weight:500; }
+  .progress-steps { font-size:12px; color:var(--green); font-weight:700; }
+
+  .container { max-width:680px; margin:0 auto; padding:24px 16px; }
+  .card { background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:28px 24px; margin-bottom:20px; border:1px solid var(--gray-border); display:none; }
+  .card.active { display:block; }
+  .section-header { display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:2px solid var(--green-bg); }
+  .section-icon { width:42px; height:42px; min-width:42px; background:var(--green-bg); border:2px solid var(--green-border); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .section-title { font-size:17px; font-weight:700; color:var(--navy); }
+  .section-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+
+  .field { margin-bottom:18px; }
+  .field label { display:block; font-size:13px; font-weight:600; color:var(--navy); margin-bottom:6px; }
+  .field label .req { color:var(--red); margin-left:2px; }
+  .field label .opt { color:var(--gray); font-weight:400; font-size:11px; margin-left:4px; }
+  .field input,.field select,.field textarea { width:100%; padding:10px 14px; border:1.5px solid var(--gray-border); border-radius:8px; font-size:14px; color:var(--navy); background:var(--gray-light); transition:border-color .2s,box-shadow .2s; outline:none; font-family:inherit; }
+  .field input:focus,.field select:focus,.field textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(22,163,74,.1); background:white; }
+  .field textarea { resize:vertical; min-height:80px; }
+  .field .hint { font-size:11px; color:var(--gray); margin-top:5px; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:520px){ .two-col { grid-template-columns:1fr; } }
+
+  .radio-group { display:flex; gap:10px; flex-wrap:wrap; }
+  .radio-item { display:flex; align-items:center; gap:8px; padding:8px 14px; border:1.5px solid var(--gray-border); border-radius:8px; cursor:pointer; transition:all .15s; background:var(--gray-light); }
+  .radio-item:hover,.radio-item.selected { border-color:var(--green); background:var(--green-bg); }
+  .radio-item input[type=radio] { accent-color:var(--green); width:15px; height:15px; }
+  .radio-item label { font-size:13px; color:var(--navy); cursor:pointer; margin:0; font-weight:500; }
+
+  .checkbox-group { display:flex; flex-direction:column; gap:8px; }
+  .check-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid var(--gray-border); border-radius:8px; cursor:pointer; transition:all .15s; background:var(--gray-light); }
+  .check-item:hover,.check-item.checked { border-color:var(--green); background:var(--green-bg); }
+  .check-item input[type=checkbox] { accent-color:var(--green); width:16px; height:16px; cursor:pointer; }
+  .check-item label { font-size:14px; color:var(--navy); cursor:pointer; margin:0; font-weight:500; }
+  .check-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; }
+
+  .travel-entry { border:1.5px solid var(--gray-border); border-radius:10px; padding:14px; margin-bottom:12px; background:var(--gray-light); position:relative; }
+  .travel-entry .remove-btn { position:absolute; top:10px; right:10px; background:var(--red); color:white; border:none; border-radius:6px; padding:3px 8px; font-size:12px; cursor:pointer; }
+  .add-btn { width:100%; padding:10px; border:2px dashed var(--green-border); background:var(--green-bg); color:var(--green); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .add-btn:hover { background:white; border-color:var(--green); }
+
+  .info-box { background:var(--green-bg); border:1px solid var(--green-border); border-radius:10px; padding:14px 16px; font-size:13px; color:#166534; margin-bottom:20px; display:flex; gap:10px; }
+  .warn-box { background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:10px; padding:14px 16px; font-size:13px; color:#92400e; margin-bottom:20px; display:flex; gap:10px; }
+
+  .nav-buttons { display:flex; gap:12px; margin-top:8px; }
+  .btn { padding:12px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all .2s; font-family:inherit; display:inline-flex; align-items:center; gap:8px; }
+  .btn-primary { background:var(--green); color:white; flex:1; justify-content:center; }
+  .btn-primary:hover { background:#15803d; transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,163,74,.3); }
+  .btn-secondary { background:white; color:var(--gray); border:1.5px solid var(--gray-border); }
+  .btn-secondary:hover { background:var(--gray-light); color:var(--navy); }
+  .btn-whatsapp { background:#25D366; color:white; flex:1; justify-content:center; font-size:15px; }
+  .btn-whatsapp:hover { background:#128C7E; transform:translateY(-1px); }
+
+  /* LOADING OVERLAY */
+  #pdf-loading { display:none; position:fixed; inset:0; background:rgba(15,23,42,.7); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+  #pdf-loading.show { display:flex; }
+  .spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,.2); border-top-color:var(--green-light); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { color:white; font-size:15px; font-weight:600; }
+
+  #success-screen { display:none; text-align:center; padding:40px 20px; }
+  .success-icon { width:80px; height:80px; background:var(--green-bg); border:3px solid var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto 20px; }
+  .success-title { font-size:22px; font-weight:800; color:var(--navy); margin-bottom:8px; }
+  .success-sub { font-size:14px; color:var(--gray); margin-bottom:28px; max-width:440px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .success-actions { display:flex; flex-direction:column; gap:12px; max-width:380px; margin:0 auto; }
+
+  .firma-input { width:100%; border:none; border-bottom:2px solid var(--navy); background:transparent; font-size:22px; font-family:'Brush Script MT',cursive; color:var(--navy); padding:8px 0; text-align:center; outline:none; }
+  .firma-box { border:2px dashed var(--gray-border); border-radius:8px; padding:16px; background:var(--gray-light); text-align:center; }
+
+  .form-footer { text-align:center; font-size:11px; color:var(--gray); margin-top:24px; padding:0 16px; line-height:1.6; }
+  .form-footer a { color:var(--green); text-decoration:none; }
+
+  /* PDF instructions box */
+  .pdf-steps { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px; margin-bottom:20px; font-size:13px; color:#166534; }
+  .pdf-steps ol { margin-left:20px; margin-top:8px; line-height:2; }
+  .pdf-steps strong { color:#15803d; }
+</style>
+</head>
+<body>
+
+<!-- PDF LOADING OVERLAY -->
+<div id="pdf-loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Generando PDF...</div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-wrap">
+    <div class="logo-icon">TG</div>
+    <div class="logo-text">
+      <div class="brand">Trámite <span>GO</span></div>
+      <div class="tagline">Asesoría Migratoria y Documental</div>
+    </div>
+  </div>
+  <div class="header-title">Renovación de Residencia Permanente</div>
+  <div class="header-sub">Formulario I-90 — Green Card</div>
+  <div class="badge">🔒 100% Confidencial</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:12.5%"></div></div>
+  <div class="progress-info">
+    <span class="progress-label" id="progress-label">Sección 1 de 7: Datos Personales</span>
+    <span class="progress-steps" id="progress-pct">13%</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- S1: DATOS PERSONALES -->
+  <div class="card active" id="section-1">
+    <div class="section-header"><div class="section-icon">👤</div><div><div class="section-title">1. Datos Personales</div><div class="section-sub">Como aparecen en su Green Card</div></div></div>
+    <div class="info-box"><span>ℹ️</span><span>Complete la información <strong>exactamente como aparece</strong> en su Green Card. Si un campo no aplica, escriba <strong>N/A</strong>.</span></div>
+    <div class="field"><label>Nombre completo (como aparece en la Green Card) <span class="req">*</span></label><input type="text" id="nombre_completo" placeholder="Ej. María Elena García López"></div>
+    <div class="field"><label>¿Ha utilizado otros nombres anteriormente?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'otros_nombres_rb','Sí')"><input type="radio" name="otros_nombres_rb" value="Sí"><label>Sí</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'otros_nombres_rb','No')"><input type="radio" name="otros_nombres_rb" value="No"><label>No</label></div>
+      </div>
+    </div>
+    <div class="field"><label>Otros nombres anteriores <span class="opt">(si aplica)</span></label><input type="text" id="otros_nombres" placeholder="Nombre(s) anterior(es)"></div>
+    <div class="two-col">
+      <div class="field"><label>Fecha de nacimiento <span class="req">*</span></label><input type="date" id="fecha_nacimiento"></div>
+      <div class="field"><label>Nacionalidad</label><input type="text" id="nacionalidad" placeholder="Ej. Mexicana"></div>
+    </div>
+    <div class="field"><label>Ciudad y país de nacimiento</label><input type="text" id="ciudad_nacimiento" placeholder="Ej. Guadalajara, México"></div>
+    <div class="two-col">
+      <div class="field"><label>Número A (A-Number) <span class="req">*</span></label><input type="text" id="a_number" placeholder="Ej. A123456789"></div>
+      <div class="field"><label>Número de Seguro Social (SSN)</label><input type="text" id="ssn" placeholder="Ej. XXX-XX-XXXX"></div>
+    </div>
+    <div class="field"><label>Estado civil</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'estado_civil','Soltero(a)')"><input type="radio" name="estado_civil" value="Soltero(a)"><label>Soltero(a)</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'estado_civil','Casado(a)')"><input type="radio" name="estado_civil" value="Casado(a)"><label>Casado(a)</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'estado_civil','Divorciado(a)')"><input type="radio" name="estado_civil" value="Divorciado(a)"><label>Divorciado(a)</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'estado_civil','Viudo(a)')"><input type="radio" name="estado_civil" value="Viudo(a)"><label>Viudo(a)</label></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Teléfono / WhatsApp <span class="req">*</span></label><input type="tel" id="telefono" placeholder="+1 619 123 4567"></div>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="email" placeholder="correo@ejemplo.com"></div>
+    </div>
+    <div class="nav-buttons"><button class="btn btn-primary" onclick="nextSection(1)">Siguiente →</button></div>
+  </div>
+
+  <!-- S2: DOMICILIO -->
+  <div class="card" id="section-2">
+    <div class="section-header"><div class="section-icon">🏠</div><div><div class="section-title">2. Domicilio</div><div class="section-sub">Dirección actual y cambios recientes</div></div></div>
+    <div class="field"><label>Dirección actual completa <span class="req">*</span></label><input type="text" id="direccion_actual" placeholder="Calle, número, ciudad, estado, código postal, país"></div>
+    <div class="field"><label>¿Cuánto tiempo lleva en esa dirección?</label><input type="text" id="tiempo_direccion" placeholder="Ej. 3 años, desde enero 2021"></div>
+    <div class="field"><label>¿Ha cambiado de domicilio en los últimos 5 años?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'cambio_domicilio','Sí')"><input type="radio" name="cambio_domicilio" value="Sí"><label>Sí</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'cambio_domicilio','No')"><input type="radio" name="cambio_domicilio" value="No"><label>No</label></div>
+      </div>
+    </div>
+    <div class="field"><label>Domicilios anteriores y fechas <span class="opt">(si aplica)</span></label><textarea id="domicilios_anteriores" placeholder="Ej.&#10;123 Main St, San Diego, CA — Ene 2019 a Mar 2022&#10;456 Oak Ave, Los Angeles, CA — Jun 2017 a Ene 2019"></textarea></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prevSection(2)">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSection(2)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- S3: GREEN CARD -->
+  <div class="card" id="section-3">
+    <div class="section-header"><div class="section-icon">💳</div><div><div class="section-title">3. Información de la Green Card</div><div class="section-sub">Datos de la tarjeta actual</div></div></div>
+    <div class="two-col">
+      <div class="field"><label>Número USCIS# <span class="req">*</span></label><input type="text" id="gc_number" placeholder="Ej. SRC0000000000"></div>
+      <div class="field"><label>Fecha de emisión</label><input type="date" id="gc_emision"></div>
+    </div>
+    <div class="field"><label>Fecha de vencimiento <span class="req">*</span></label><input type="date" id="gc_vencimiento"></div>
+    <div class="field"><label>Motivo de la solicitud <span class="opt">(puede elegir varios)</span></label>
+      <div class="checkbox-group check-grid" id="motivo_solicitud">
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Tarjeta vencida"><label>⌛ Tarjeta vencida</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Próxima a vencer"><label>⚠️ Próxima a vencer</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Perdida"><label>🔍 Perdida</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Robada"><label>🚨 Robada</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Dañada"><label>🗓️ Dañada</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Error en la tarjeta"><label>❌ Error en tarjeta</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Cambio de nombre"><label>✏️ Cambio de nombre</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Otro motivo"><label>📄 Otro</label></div>
+      </div>
+    </div>
+    <div class="field"><label>Explique el motivo <span class="opt">(si aplica)</span></label><textarea id="motivo_explicacion" placeholder="Describa la situación..."></textarea></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prevSection(3)">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSection(3)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- S4: HISTORIAL MIGRATORIO -->
+  <div class="card" id="section-4">
+    <div class="section-header"><div class="section-icon">🛂</div><div><div class="section-title">4. Historial Migratorio</div><div class="section-sub">Cómo obtuvo la residencia</div></div></div>
+    <div class="field"><label>¿Cómo obtuvo la residencia permanente?</label>
+      <div class="checkbox-group check-grid" id="como_obtuvo">
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Petición familiar"><label>👨‍👩‍👧 Petición familiar</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Matrimonio"><label>💍 Matrimonio</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Empleo"><label>💼 Empleo</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Asilo"><label>🛡️ Asilo</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Ajuste de estatus"><label>📋 Ajuste de estatus</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Otro medio"><label>📄 Otro</label></div>
+      </div>
+    </div>
+    <div class="field"><label>Explique <span class="opt">(si aplica)</span></label><textarea id="como_obtuvo_exp" placeholder="Describa brevemente el proceso..."></textarea></div>
+    <div class="field"><label>Fecha aproximada en que obtuvo la residencia</label><input type="text" id="fecha_residencia" placeholder="Ej. Marzo 2015"></div>
+    <div class="two-col">
+      <div class="field"><label>¿Ha solicitado ciudadanía?</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio(this,'solicit_ciudadania','Sí')"><input type="radio" name="solicit_ciudadania" value="Sí"><label>Sí</label></div>
+          <div class="radio-item" onclick="selectRadio(this,'solicit_ciudadania','No')"><input type="radio" name="solicit_ciudadania" value="No"><label>No</label></div>
+        </div>
+      </div>
+      <div class="field"><label>¿Trámite pendiente con USCIS?</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio(this,'tramite_pendiente','Sí')"><input type="radio" name="tramite_pendiente" value="Sí"><label>Sí</label></div>
+          <div class="radio-item" onclick="selectRadio(this,'tramite_pendiente','No')"><input type="radio" name="tramite_pendiente" value="No"><label>No</label></div>
+        </div>
+      </div>
+    </div>
+    <div class="field"><label>Número de recibo pendiente <span class="opt">(si aplica)</span></label><input type="text" id="recibo_pendiente" placeholder="Ej. IOE0000000000"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prevSection(4)">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSection(4)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- S5: VIAJES -->
+  <div class="card" id="section-5">
+    <div class="section-header"><div class="section-icon">✈️</div><div><div class="section-title">5. Viajes Fuera de EE.UU.</div><div class="section-sub">Últimos 5 años</div></div></div>
+    <div class="warn-box"><span>⚠️</span><span>Ausencias prolongadas pueden <strong>afectar su residencia permanente</strong>. Sea preciso.</span></div>
+    <div class="field"><label>¿Ha salido de EE.UU. en los últimos 5 años?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'viajes_rb','Sí')"><input type="radio" name="viajes_rb" value="Sí"><label>Sí</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'viajes_rb','No')"><input type="radio" name="viajes_rb" value="No"><label>No</label></div>
+      </div>
+    </div>
+    <div class="field"><label>Registre cada viaje:</label>
+      <div id="viajes-container">
+        <div class="travel-entry" id="viaje-1">
+          <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:10px;">VIAJE 1</div>
+          <div class="two-col">
+            <div class="field" style="margin-bottom:10px;"><label>País visitado</label><input type="text" class="viaje-pais" placeholder="Ej. México"></div>
+            <div class="field" style="margin-bottom:10px;"><label>Fecha de salida</label><input type="date" class="viaje-salida"></div>
+          </div>
+          <div class="field" style="margin-bottom:0;"><label>Fecha de regreso</label><input type="date" class="viaje-regreso"></div>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addViaje()">+ Agregar otro viaje</button>
+    </div>
+    <div class="field"><label>¿Más de 6 meses consecutivos fuera?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'mas_6m','Sí')"><input type="radio" name="mas_6m" value="Sí"><label>Sí</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'mas_6m','No')"><input type="radio" name="mas_6m" value="No"><label>No</label></div>
+      </div>
+    </div>
+    <div class="field"><label>¿Más de 1 año consecutivo fuera?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'mas_1a','Sí')"><input type="radio" name="mas_1a" value="Sí"><label>Sí</label></div>
+        <div class="radio-item" onclick="selectRadio(this,'mas_1a','No')"><input type="radio" name="mas_1a" value="No"><label>No</label></div>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prevSection(5)">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSection(5)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- S6: ANTECEDENTES -->
+  <div class="card" id="section-6">
+    <div class="section-header"><div class="section-icon">⚖️</div><div><div class="section-title">6. Antecedentes</div><div class="section-sub">Información legal y migratoria</div></div></div>
+    <div class="warn-box"><span>⚠️</span><span>Responda con <strong>total honestidad</strong>. Esta información es confidencial.</span></div>
+    <div class="field"><label>¿Ha sido arrestado(a)?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'arrestado','Sí')"><input type="radio" name="arrestado" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'arrestado','No')"><input type="radio" name="arrestado" value="No"><label>No</label></div></div></div>
+    <div class="field"><label>¿Ha sido acusado(a) de algún delito?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'acusado','Sí')"><input type="radio" name="acusado" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'acusado','No')"><input type="radio" name="acusado" value="No"><label>No</label></div></div></div>
+    <div class="field"><label>¿Ha sido condenado(a) por algún delito?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'condenado','Sí')"><input type="radio" name="condenado" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'condenado','No')"><input type="radio" name="condenado" value="No"><label>No</label></div></div></div>
+    <div class="field"><label>¿Ha tenido contacto con ICE, CBP u otra autoridad migratoria?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'contacto_migra','Sí')"><input type="radio" name="contacto_migra" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'contacto_migra','No')"><input type="radio" name="contacto_migra" value="No"><label>No</label></div></div></div>
+    <div class="field"><label>Si respondió sí, explique <span class="opt">(si aplica)</span></label><textarea id="antecedentes_exp" placeholder="Fechas, situación, resultado..."></textarea></div>
+    <div class="field"><label>¿Ha recibido notificación de comparecencia ante corte migratoria?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'corte_migratoria','Sí')"><input type="radio" name="corte_migratoria" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'corte_migratoria','No')"><input type="radio" name="corte_migratoria" value="No"><label>No</label></div></div></div>
+    <div class="field"><label>¿Existe orden de deportación o remoción en su contra?</label><div class="radio-group"><div class="radio-item" onclick="selectRadio(this,'orden_deportacion','Sí')"><input type="radio" name="orden_deportacion" value="Sí"><label>Sí</label></div><div class="radio-item" onclick="selectRadio(this,'orden_deportacion','No')"><input type="radio" name="orden_deportacion" value="No"><label>No</label></div></div></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prevSection(6)">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSection(6)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- S7: DOCUMENTOS + DECLARACIÓN -->
+  <div class="card" id="section-7">
+    <div class="section-header"><div class="section-icon">✍️</div><div><div class="section-title">7. Documentos y Declaración</div><div class="section-sub">Documentos disponibles y firma</div></div></div>
+    <div class="field"><label>Documentos disponibles para enviar:</label>
+      <div class="checkbox-group" id="documentos">
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Green Card (frente y reverso)"><label>💳 Green Card (frente y reverso)</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Pasaporte vigente"><label>🛂 Pasaporte vigente</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Licencia de conducir o ID estatal"><label>🪪 Licencia o ID estatal</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Tarjeta de Seguro Social"><label>📋 Tarjeta de Seguro Social</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Documento de cambio de nombre"><label>✏️ Documento de cambio de nombre</label></div>
+        <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox" value="Documentos judiciales"><label>⚖️ Documentos judiciales</label></div>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:20px;"><span>🔒</span><span>Información <strong>100% confidencial</strong>. Solo la verá el equipo de Trámite GO.</span></div>
+    <div class="field"><label>Firma electrónica (escriba su nombre completo)</label>
+      <div class="firma-box">
+        <input type="text" class="firma-input" id="firma" placeholder="Escriba su nombre completo">
+        <div style="font-size:11px;margin-top:8px;color:var(--gray);">Firma electrónica con valor declarativo</div>
+      </div>
+    </div>
+    <div class="field"><label>Fecha</label><input type="date" id="fecha_firma"></div>
+    <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:10px;padding:14px;font-size:13px;color:#166534;margin-bottom:20px;line-height:1.6;">
+      ✅ <strong>Declaro</strong> que toda la información proporcionada es <strong>verdadera y completa</strong>.
+    </div>
+    <div class="nav-buttons" style="flex-direction:column;">
+      <button class="btn btn-whatsapp" onclick="generarPDFyEnviar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Generar PDF y Enviar por WhatsApp
+      </button>
+      <button class="btn btn-secondary" onclick="prevSection(7)" style="justify-content:center;">← Revisar información</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success-screen">
+    <div class="success-icon">✅</div>
+    <div class="success-title">¡PDF generado y listo!</div>
+    <div class="success-sub" id="success-msg">Su PDF fue descargado. Ahora puede adjuntarlo en WhatsApp al equipo de Trámite GO.</div>
+    <div class="pdf-steps">
+      <strong>Pasos para enviar el PDF por WhatsApp:</strong>
+      <ol>
+        <li>El PDF ya fue descargado a su dispositivo</li>
+        <li>Abra WhatsApp con Trámite GO (botón abajo)</li>
+        <li>Toque el ícono de adjuntar 📎</li>
+        <li>Seleccione el PDF de su carpeta de descargas</li>
+        <li>Envíe el archivo</li>
+      </ol>
+    </div>
+    <div class="success-actions">
+      <button class="btn btn-whatsapp" style="width:100%;justify-content:center;" onclick="abrirWhatsApp()">
+        💬 Abrir WhatsApp con Trámite GO
+      </button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="descargarOtraVez()">
+        ⬇️ Descargar PDF nuevamente
+      </button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="resetForm()">
+        ↺ Nuevo cuestionario
+      </button>
+    </div>
+  </div>
+
+  <div class="form-footer">
+    <strong>Trámite GO</strong> · Asesoría migratoria y documental de confianza<br>
+    📍 Tijuana, B.C. México · 📞 <a href="tel:+5216645298312">+52 1 664 529 8312</a> · 📧 <a href="mailto:tramitesgomx@gmail.com">tramitesgomx@gmail.com</a><br>
+    <span style="color:#94a3b8;">Servicio privado e independiente · © 2026 Trámite GO</span>
+  </div>
+</div>
+
+<script>
+  let currentSection = 1, viajeCount = 1;
+  let pdfBlob = null, nombreCliente = '';
+  const totalSections = 7;
+  const sectionNames = ['Datos Personales','Domicilio','Green Card','Historial Migratorio','Viajes al Extranjero','Antecedentes','Documentos y Declaración'];
+
+  document.getElementById('fecha_firma').valueAsDate = new Date();
+
+  function updateProgress(s) {
+    const p = Math.round((s/totalSections)*100);
+    document.getElementById('progress-fill').style.width = p+'%';
+    document.getElementById('progress-label').textContent = `Sección ${s} de ${totalSections}: ${sectionNames[s-1]}`;
+    document.getElementById('progress-pct').textContent = p+'%';
+  }
+  function showSection(n) {
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    const el=document.getElementById('section-'+n);
+    if(el){el.classList.add('active');updateProgress(n);window.scrollTo({top:0,behavior:'smooth'});}
+    currentSection=n;
+  }
+  function nextSection(f){showSection(f+1);}
+  function prevSection(f){showSection(f-1);}
+  function toggleCheck(item){const cb=item.querySelector('input[type=checkbox]');cb.checked=!cb.checked;item.classList.toggle('checked',cb.checked);}
+  function selectRadio(item,name){
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r=>{r.checked=false;r.closest('.radio-item').classList.remove('selected');});
+    item.querySelector('input[type=radio]').checked=true;item.classList.add('selected');
+  }
+  function getRadio(name){const r=document.querySelector(`input[name="${name}"]:checked`);return r?r.value:'No especificado';}
+  function getChecked(id){const i=document.querySelectorAll(`#${id} input[type=checkbox]:checked`);const v=Array.from(i).map(x=>x.value);return v.length?v.join(', '):'Ninguno';}
+  function fmtDate(id){const v=document.getElementById(id).value;if(!v)return'No especificado';const d=new Date(v+'T00:00:00');return d.toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});}
+  function val(id){return document.getElementById(id).value.trim()||'No especificado';}
+
+  function addViaje(){
+    viajeCount++;
+    const c=document.getElementById('viajes-container');
+    const d=document.createElement('div');
+    d.className='travel-entry';d.id=`viaje-${viajeCount}`;
+    d.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:10px;">VIAJE ${viajeCount}</div>
+      <button class="remove-btn" onclick="removeViaje(${viajeCount})">✕</button>
+      <div class="two-col">
+        <div class="field" style="margin-bottom:10px;"><label>País visitado</label><input type="text" class="viaje-pais" placeholder="Ej. México"></div>
+        <div class="field" style="margin-bottom:10px;"><label>Fecha de salida</label><input type="date" class="viaje-salida"></div>
+      </div>
+      <div class="field" style="margin-bottom:0;"><label>Fecha de regreso</label><input type="date" class="viaje-regreso"></div>`;
+    c.appendChild(d);
+  }
+  function removeViaje(n){const el=document.getElementById(`viaje-${n}`);if(el)el.remove();}
+  function getViajes(){
+    const entries=document.querySelectorAll('.travel-entry');
+    if(!entries.length)return[['Sin viajes registrados','','']];
+    return Array.from(entries).map((e,i)=>{
+      const p=e.querySelector('.viaje-pais').value||'N/A';
+      const s=e.querySelector('.viaje-salida').value;
+      const r=e.querySelector('.viaje-regreso').value;
+      const fmt=d=>{if(!d)return'N/A';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric'});};
+      return[`Viaje ${i+1}`,p,`Salida: ${fmt(s)}  |  Regreso: ${fmt(r)}`];
+    });
+  }
+
+  // ─── PDF GENERATION ───────────────────────────────────────────────
+  async function generarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+    const W = 216, M = 18, TW = W - M*2;
+    let y = 0;
+
+    function newPage() { doc.addPage(); y = 20; }
+    function checkY(needed=10) { if(y + needed > 270) newPage(); }
+
+    // ── HEADER ──
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, W, 38, 'F');
+    doc.setFillColor(22, 163, 74);
+    doc.roundedRect(M, 8, 22, 22, 4, 4, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('TG', M+11, 21, {align:'center'});
+    doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text('Tramite GO', M+28, 16);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.setTextColor(180,220,180);
+    doc.text('Asesoria Migratoria y Documental', M+28, 22);
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(11); doc.setFont('helvetica','bold');
+    doc.text('CUESTIONARIO RENOVACION DE RESIDENCIA PERMANENTE (I-90)', W/2, 32, {align:'center'});
+    y = 46;
+
+    // ── META INFO ──
+    doc.setFillColor(240,253,244);
+    doc.rect(M, y, TW, 10, 'F');
+    doc.setTextColor(22,101,52); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    const today = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+    doc.text(`Fecha de llenado: ${today}    |    Documento confidencial — solo para uso interno de Tramite GO`, M+4, y+6.5);
+    y += 16;
+
+    function sectionHeader(icon, title) {
+      checkY(14);
+      doc.setFillColor(15,23,42);
+      doc.rect(M, y, TW, 9, 'F');
+      doc.setTextColor(255,255,255); doc.setFontSize(9.5); doc.setFont('helvetica','bold');
+      doc.text(`${icon}  ${title}`, M+4, y+6.2);
+      y += 13;
+    }
+
+    function field(label, value) {
+      const displayVal = (value === 'No especificado' || !value) ? '—' : value;
+      const lines = doc.splitTextToSize(displayVal, TW - 55);
+      const needed = 7 + (lines.length - 1) * 5;
+      checkY(needed + 4);
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+      doc.text(label + ':', M, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(15,23,42);
+      doc.text(lines, M + 55, y);
+      y += needed;
+    }
+
+    function twoFields(l1,v1,l2,v2){
+      checkY(10);
+      const half = TW/2 - 4;
+      const val1 = (v1==='No especificado'||!v1)?'—':v1;
+      const val2 = (v2==='No especificado'||!v2)?'—':v2;
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+      doc.text(l1+':', M, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(15,23,42);
+      doc.text(doc.splitTextToSize(val1, half-30), M+30, y);
+      doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+      doc.text(l2+':', M+half+6, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(15,23,42);
+      doc.text(doc.splitTextToSize(val2, half-30), M+half+36, y);
+      y += 8;
+    }
+
+    function divider() { checkY(6); doc.setDrawColor(226,232,240); doc.setLineWidth(0.3); doc.line(M, y, M+TW, y); y += 5; }
+
+    // ── SECCIÓN 1 ──
+    sectionHeader('1.', 'DATOS PERSONALES');
+    field('Nombre completo', val('nombre_completo'));
+    twoFields('F. Nacimiento', fmtDate('fecha_nacimiento'), 'Nacionalidad', val('nacionalidad'));
+    twoFields('Ciudad/Pais nac.', val('ciudad_nacimiento'), 'Estado civil', getRadio('estado_civil'));
+    twoFields('A-Number', val('a_number'), 'SSN', val('ssn'));
+    twoFields('Telefono', val('telefono'), 'Correo', val('email'));
+    field('Otros nombres', getRadio('otros_nombres_rb')+' — '+val('otros_nombres'));
+    divider();
+
+    // ── SECCIÓN 2 ──
+    sectionHeader('2.', 'DOMICILIO');
+    field('Direccion actual', val('direccion_actual'));
+    field('Tiempo en direccion', val('tiempo_direccion'));
+    field('Cambio domicilio 5 años', getRadio('cambio_domicilio'));
+    field('Domicilios anteriores', val('domicilios_anteriores'));
+    divider();
+
+    // ── SECCIÓN 3 ──
+    sectionHeader('3.', 'GREEN CARD');
+    twoFields('Num. USCIS#', val('gc_number'), 'Emision', fmtDate('gc_emision'));
+    field('Vencimiento', fmtDate('gc_vencimiento'));
+    field('Motivo solicitud', getChecked('motivo_solicitud'));
+    field('Explicacion motivo', val('motivo_explicacion'));
+    divider();
+
+    // ── SECCIÓN 4 ──
+    sectionHeader('4.', 'HISTORIAL MIGRATORIO');
+    field('Como obtuvo residencia', getChecked('como_obtuvo'));
+    field('Explicacion', val('como_obtuvo_exp'));
+    field('Fecha obtuvo residencia', val('fecha_residencia'));
+    twoFields('Solicito ciudadania', getRadio('solicit_ciudadania'), 'Tramite pendiente', getRadio('tramite_pendiente'));
+    field('Num. recibo pendiente', val('recibo_pendiente'));
+    divider();
+
+    // ── SECCIÓN 5 ──
+    sectionHeader('5.', 'VIAJES FUERA DE EE.UU.');
+    field('Ha viajado (5 años)', getRadio('viajes_rb'));
+    const viajes = getViajes();
+    viajes.forEach(v => { checkY(8); field(v[0], `${v[1]}  ${v[2]}`); });
+    twoFields('Mas de 6 meses', getRadio('mas_6m'), 'Mas de 1 año', getRadio('mas_1a'));
+    divider();
+
+    // ── SECCIÓN 6 ──
+    sectionHeader('6.', 'ANTECEDENTES');
+    twoFields('Arrestado(a)', getRadio('arrestado'), 'Acusado(a)', getRadio('acusado'));
+    twoFields('Condenado(a)', getRadio('condenado'), 'Contacto migra', getRadio('contacto_migra'));
+    field('Explicacion antecedentes', val('antecedentes_exp'));
+    twoFields('Corte migratoria', getRadio('corte_migratoria'), 'Orden deportacion', getRadio('orden_deportacion'));
+    divider();
+
+    // ── SECCIÓN 7 ──
+    sectionHeader('7.', 'DOCUMENTOS Y DECLARACION');
+    field('Documentos disponibles', getChecked('documentos'));
+    divider();
+
+    // ── FIRMA ──
+    checkY(35);
+    doc.setFillColor(240,253,244);
+    doc.roundedRect(M, y, TW, 30, 3, 3, 'F');
+    doc.setDrawColor(187,247,208); doc.setLineWidth(0.5);
+    doc.roundedRect(M, y, TW, 30, 3, 3, 'S');
+    doc.setTextColor(22,101,52); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+    doc.text('DECLARACION', M+TW/2, y+7, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(15,23,42);
+    doc.text('Declaro que toda la informacion proporcionada es verdadera y completa a mi leal saber y entender.', M+4, y+14, {maxWidth:TW-8});
+    doc.setFont('helvetica','bold');
+    doc.text('Firma: '+val('firma'), M+4, y+22);
+    doc.text('Fecha: '+fmtDate('fecha_firma'), M+TW/2+4, y+22);
+    y += 38;
+
+    // ── FOOTER ──
+    const pages = doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){
+      doc.setPage(i);
+      doc.setFillColor(15,23,42);
+      doc.rect(0, 279, W, 16, 'F');
+      doc.setTextColor(180,220,180); doc.setFontSize(7); doc.setFont('helvetica','normal');
+      doc.text('Tramite GO  |  tramitesgomx@gmail.com  |  +52 1 664 529 8312  |  Tijuana, B.C. Mexico  |  tramitego.com', W/2, 286, {align:'center'});
+      doc.setTextColor(100,140,100);
+      doc.text(`Pagina ${i} de ${pages}`, W-M, 286, {align:'right'});
+    }
+
+    return doc;
+  }
+
+  async function generarPDFyEnviar() {
+    nombreCliente = val('nombre_completo');
+    if (nombreCliente === 'No especificado') {
+      alert('Por favor complete al menos su nombre completo antes de continuar.');
+      showSection(1); return;
+    }
+
+    document.getElementById('pdf-loading').classList.add('show');
+    await new Promise(r => setTimeout(r, 100));
+
+    try {
+      const doc = await generarPDF();
+      const fileName = `I90_TramiteGO_${nombreCliente.replace(/\s+/g,'_')}.pdf`;
+      pdfBlob = doc.output('blob');
+      doc.save(fileName);
+      await new Promise(r => setTimeout(r, 600));
+      document.getElementById('pdf-loading').classList.remove('show');
+      mostrarExito(fileName);
+    } catch(e) {
+      document.getElementById('pdf-loading').classList.remove('show');
+      alert('Hubo un error generando el PDF. Intente de nuevo.');
+      console.error(e);
+    }
+  }
+
+  function mostrarExito(fileName) {
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    document.getElementById('progress-wrap').style.display='none';
+    document.getElementById('success-screen').style.display='block';
+    document.getElementById('success-msg').textContent =
+      `El PDF "${fileName}" fue descargado. Ahora ábralo en WhatsApp con Trámite GO para enviarlo como adjunto.`;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function abrirWhatsApp() {
+    const msg = `Hola Trámite GO, le envío mi cuestionario I-90 de renovación de residencia permanente.\n\nNombre: ${nombreCliente}\nFecha: ${new Date().toLocaleDateString('es-MX')}\n\nAdjunto el PDF con toda la información.`;
+    window.open('https://wa.me/5216645298312?text='+encodeURIComponent(msg), '_blank');
+  }
+
+  function descargarOtraVez() {
+    if(!pdfBlob) return;
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `I90_TramiteGO_${nombreCliente.replace(/\s+/g,'_')}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetForm() {
+    document.getElementById('progress-wrap').style.display='block';
+    document.getElementById('success-screen').style.display='none';
+    document.querySelectorAll('input:not([type=radio]):not([type=checkbox])').forEach(i=>i.value='');
+    document.querySelectorAll('textarea').forEach(t=>t.value='');
+    document.querySelectorAll('input[type=radio]').forEach(r=>{r.checked=false;r.closest('.radio-item').classList.remove('selected');});
+    document.querySelectorAll('input[type=checkbox]').forEach(c=>{c.checked=false;c.closest('.check-item').classList.remove('checked');});
+    document.getElementById('fecha_firma').valueAsDate=new Date();
+    document.getElementById('viajes-container').innerHTML=`<div class="travel-entry" id="viaje-1">
+      <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:10px;">VIAJE 1</div>
+      <div class="two-col"><div class="field" style="margin-bottom:10px;"><label>País visitado</label><input type="text" class="viaje-pais" placeholder="Ej. México"></div><div class="field" style="margin-bottom:10px;"><label>Fecha de salida</label><input type="date" class="viaje-salida"></div></div>
+      <div class="field" style="margin-bottom:0;"><label>Fecha de regreso</label><input type="date" class="viaje-regreso"></div></div>`;
+    viajeCount=1; pdfBlob=null; nombreCliente='';
+    showSection(1);
+  }
+</script>
+</body>
+</html>
